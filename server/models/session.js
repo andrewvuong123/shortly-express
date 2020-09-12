@@ -45,6 +45,12 @@ class Sessions extends Model {
       });
   }
 
+  //req.session = new Session();
+  //isLoggedIn ?
+  //session table = {userID, hash}
+
+  //->REQ -> BODY PARSER -> COOKIE PARSER -> SESSION OBJECT ->
+
   /**
    * Creates a new session. Within this function, a hash is randomly generated.
    * @returns {Promise<Object>} A promise that is fulfilled with the results of
@@ -58,3 +64,7 @@ class Sessions extends Model {
 }
 
 module.exports = new Sessions();
+
+//create session, session.create()
+//hash to client, session cookie-fied and send to client;
+//hash: ;fjdsal;kfjddfkjls

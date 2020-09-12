@@ -44,6 +44,37 @@ class Users extends Model {
 
     return super.create.call(this, newUser);
   }
+
+  login({username, password}, callback) {
+    //get
+    //compare
+    // no req, or res
+
+    super.get({username}).then(user => {
+      if (user) {
+        if (this.compare(password, user.password, user.salt)) {
+          //create session, res send session
+          callback(null, 'User Logged In');
+        } else {
+          callback('Wrong password');
+        }
+      } else {
+        callback('No user');
+      }
+    });
+  }
+
+  signup({username, password}, callback) {
+    super.get({username}).then(user => {
+      if (!user) {
+        this.create({username, password}).then(() => {
+          callback(null, 'User Created');
+        });
+      } else {
+        callback('User Exists');
+      }
+    });
+  }
 }
 
 module.exports = new Users();
