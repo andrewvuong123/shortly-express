@@ -4,52 +4,30 @@ const Promise = require('bluebird');
 module.exports.createSession = (req, res, next) => {
   //INPUT: access the parsed req.cookies
   //QUERY user data from cookies related to that session
-  //OUTPUT: attached to req.sessions = {} with relevant user information
+  //OUTPUT: attached to req.sessions = {} with relevant user information, res.cookies
   //attach to req.session() // session.isLoggedIn
   //logged in... sessionOBJ
 
-  console.log('Create Session Initialized');
-  console.log('Create Session Initialized');
-  console.log('Create Session Initialized');
-  console.log('Create Session Initialized');
-  console.log('Create Session Initialized');
-  console.log('Create Session Initialized');
-  console.log(res.cookie);
-  if (!req.cookies.shortlyid) {
-    models.Sessions.create().then((packet) => {
-      models.Sessions.get({id: packet.insertId}).then(data => {
-        console.log(data);
-        res.cookies = {shortlyid: data.hash};
-        //models.Users.get({id: userId})
-        req.session = data;
-        console.log(res.cookies);
-        console.log('Request Session is');
-        console.log(req.session.hash);
-        next();
-      });
+  Promise.resolve(req.cookies.shortlyid).then(hash => {
+    if (!hash) {
+      throw hash;
+    }
+    return models.Sessions.get({hash});
+  }).tap(session => {
+    if (!session) {
+      throw session;
+    }
+  }).catch(() => {
+    // create new cookie if does not match or does not exist
+    return models.Sessions.create().then(results => {
+      return models.Sessions.get({ id: results.insertId});
+    }).tap(session => {
+      res.cookie('shortlyid', session.hash);
     });
-  } else {
-    //CHECK IF HASH VALID
-    const { shortlyid } = req.cookies;
-    models.Sessions.get({shortlyid}).then(data => {
-      if (hash === data.hash) {
-        //VALID HASH
-        res.cookies = {shortlyid: hash};
-        req.session = data;
-        next();
-      } else {
-        //NOT VALID
-        console.log('Session OBJ:');
-        models.Sessions().create().then(obj => {
-          models.Sessions.get({shortlyid}).then(user => {
-            res.cookies = {shortlyid: obj.hash};
-            req.session = obj;
-            next();
-          });
-        });
-      }
-    });
-  }
+  }).then(session => {
+    req.session = session;
+    next();
+  });
 };
 
 /************************************************************/
@@ -61,9 +39,9 @@ module.exports.createSession = (req, res, next) => {
 module.exports.verifySession = (req, res, next) => {
   //redirect to login...vip endpoints ...
   //redirect
-
-  if (!req.session.user) {
+  if (!models.Sessions.isLoggedIn(req.session)) {
     res.redirect('/login');
+  } else {
+    next();
   }
-  next();
 };

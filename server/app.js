@@ -3,8 +3,8 @@ const path = require('path');
 const utils = require('./lib/hashUtils');
 const partials = require('express-partials');
 const bodyParser = require('body-parser');
-const cookieParser = require('./middleware/cookieParser');
 const Auth = require('./middleware/auth');
+const cookieParser = require('./middleware/cookieParser');
 const models = require('./models');
 const db = require('./db');
 
@@ -87,18 +87,13 @@ app.post('/signup', (req, res, next) => {
   //INPUT: req.body.password
   var username = req.body.username;
   var password = req.body.password;
-  //check to see if username exists
-  //if it does, reject("user already exists")
-  //else models.user ({username, password})
+
   models.Users.signup({username, password}, (err, msg) => {
     if (err) {
       res.status(403).redirect('/signup');
     } else {
-      //signed up OK
       models.Users.get({username}).then(user => {
         models.Sessions.get({hash: req.session.hash}).then(session => {
-          console.log('session found');
-          console.log(session);
           session.userId = user.id;
           res.status(200).redirect('/');
         });
@@ -112,16 +107,7 @@ app.post('/login', (req, res, next) => {
   //INPUT: req.body.password
   var username = req.body.username;
   var password = req.body.password;
-  //check if username exists
-  //catch(err => res.send('Sorry username doesnt exist'));
-  //if it does, check if password is right
-  //catch(err => res.send({error: password, msg: 'Sorry wrong password)});
-  // err {password} toggle red field for the password input box. //css
-  // if matches, create session token
-  //  convert to cookie
-  //  store in sessions table
-  // else reject
-  //catch res.send('wrong credentials');
+
   models.Users.login({username, password}, (err, msg) => {
     if (err) {
       res.status(403).redirect('/login');

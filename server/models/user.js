@@ -46,14 +46,9 @@ class Users extends Model {
   }
 
   login({username, password}, callback) {
-    //get
-    //compare
-    // no req, or res
-
     super.get({username}).then(user => {
       if (user) {
         if (this.compare(password, user.password, user.salt)) {
-          //create session, res send session
           callback(null, 'User Logged In');
         } else {
           callback('Wrong password');
